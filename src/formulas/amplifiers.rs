@@ -666,18 +666,16 @@ pub fn formulas() -> Vec<FormulaEntry> {
                 output_unit: "V_rms",
                 compute: |v| {
                     let rf_par_rg = (v[2] * v[3]) / (v[2] + v[3]);
-                    let vn_rms = v[0] * v[5].sqrt() * (1.0 + v[2] / v[3]);
-                    let in_inv = v[1] * v[5].sqrt() * v[2];
-                    let in_noninv = v[1] * v[5].sqrt() * v[4] * (1.0 + v[2] / v[3]);
-                    let vr_ni = (v[4] / 1000.0).sqrt() * 4.0e-9 * v[5].sqrt() * (1.0 + v[2] / v[3]);
-                    let vr_rg = (rf_par_rg / 1000.0).sqrt() * 4.0e-9 * v[5].sqrt() * v[2];
-                    let vr_f = (v[2] / 1000.0).sqrt() * 4.0e-9 * v[5].sqrt();
+                    let vn_rms = v[0] * v[5].sqrt();
+                    let in_inv = v[1] * v[5].sqrt() * rf_par_rg;
+                    let in_noninv = v[1] * v[5].sqrt() * v[4];
+                    let vr_rfrg = (rf_par_rg / 1000.0).sqrt() * 4.0e-9 * v[5].sqrt();
+                    let vr_ni = (v[4] / 1000.0).sqrt() * 4.0e-9 * v[5].sqrt();
                     (vn_rms * vn_rms
                         + in_inv * in_inv
                         + in_noninv * in_noninv
-                        + vr_ni * vr_ni
-                        + vr_rg * vr_rg
-                        + vr_f * vr_f)
+                        + vr_rfrg * vr_rfrg
+                        + vr_ni * vr_ni)
                         .sqrt()
                 },
             }],
@@ -729,18 +727,16 @@ pub fn formulas() -> Vec<FormulaEntry> {
                 output_unit: "V_rms",
                 compute: |v| {
                     let rf_par_rg = (v[2] * v[3]) / (v[2] + v[3]);
-                    let vn_rms = v[0] * v[5].sqrt() * (1.0 + v[2] / v[3]);
-                    let in_inv = v[1] * v[5].sqrt() * v[2];
-                    let in_noninv = v[1] * v[5].sqrt() * v[4] * (1.0 + v[2] / v[3]);
-                    let vr_ni = (v[4] / 1000.0).sqrt() * 4.0e-9 * v[5].sqrt() * (1.0 + v[2] / v[3]);
-                    let vr_rg = (rf_par_rg / 1000.0).sqrt() * 4.0e-9 * v[5].sqrt() * v[2];
-                    let vr_f = (v[2] / 1000.0).sqrt() * 4.0e-9 * v[5].sqrt();
+                    let vn_rms = v[0] * v[5].sqrt();
+                    let in_inv = v[1] * v[5].sqrt() * rf_par_rg;
+                    let in_noninv = v[1] * v[5].sqrt() * v[4];
+                    let vr_rfrg = (rf_par_rg / 1000.0).sqrt() * 4.0e-9 * v[5].sqrt();
+                    let vr_ni = (v[4] / 1000.0).sqrt() * 4.0e-9 * v[5].sqrt();
                     let rti = (vn_rms * vn_rms
                         + in_inv * in_inv
                         + in_noninv * in_noninv
-                        + vr_ni * vr_ni
-                        + vr_rg * vr_rg
-                        + vr_f * vr_f)
+                        + vr_rfrg * vr_rfrg
+                        + vr_ni * vr_ni)
                         .sqrt();
                     rti * (1.0 + v[2] / v[3])
                 },
