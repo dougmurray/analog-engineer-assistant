@@ -7,7 +7,10 @@ use std::io;
 
 use clap::Parser;
 use crossterm::{
-    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyEventKind},
+    event::{
+        self, DisableBracketedPaste, DisableMouseCapture, EnableBracketedPaste,
+        EnableMouseCapture, Event, KeyEventKind,
+    },
     execute,
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
@@ -87,7 +90,12 @@ fn main() -> io::Result<()> {
 
     enable_raw_mode()?;
     let mut stdout = io::stdout();
-    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
+    execute!(
+        stdout,
+        EnterAlternateScreen,
+        EnableMouseCapture,
+        EnableBracketedPaste
+    )?;
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
@@ -97,7 +105,8 @@ fn main() -> io::Result<()> {
     execute!(
         terminal.backend_mut(),
         LeaveAlternateScreen,
-        DisableMouseCapture
+        DisableMouseCapture,
+        DisableBracketedPaste
     )?;
     terminal.show_cursor()?;
 
@@ -108,14 +117,18 @@ fn run(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, app: &mut App) -> 
     loop {
         terminal.draw(|f| ui::render(f, app))?;
 
-        if let Event::Key(key) = event::read()? {
-            if key.kind != KeyEventKind::Press {
-                continue;
+        match event::read()? {
+            Event::Key(key) => {
+                if key.kind != KeyEventKind::Press {
+                    continue;
+                }
+                if app.should_quit(key.code) {
+                    return Ok(());
+                }
+                app.handle_key(key);
             }
-            if app.should_quit(key.code) {
-                return Ok(());
-            }
-            app.handle_key(key);
+            Event::Paste(text) => app.handle_paste(text),
+            _ => {}
         }
     }
 }

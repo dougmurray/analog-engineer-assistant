@@ -200,6 +200,31 @@ impl App {
         }
     }
 
+    /// Handle a bracketed-paste event (e.g. Cmd+V into a terminal that
+    /// supports bracketed paste). Only meaningful in `InputEdit` and
+    /// `Search`, where pasted text is appended into the active buffer.
+    pub fn handle_paste(&mut self, text: String) {
+        // Strip whitespace/newlines: these are single-line numeric/query fields.
+        let cleaned: String = text.chars().filter(|c| !c.is_whitespace()).collect();
+        if cleaned.is_empty() {
+            return;
+        }
+        match self.mode {
+            Mode::InputEdit => {
+                if self.edit_is_fresh {
+                    self.edit_buffer.clear();
+                    self.edit_is_fresh = false;
+                }
+                self.edit_buffer.push_str(&cleaned);
+            }
+            Mode::Search => {
+                self.search_query.push_str(&cleaned);
+                self.update_search_results();
+            }
+            _ => {}
+        }
+    }
+
     fn push_history(&mut self) {
         if let Some(val) = self.compute_result()
             && val.is_finite()
